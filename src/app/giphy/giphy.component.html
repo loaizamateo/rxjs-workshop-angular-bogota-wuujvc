@@ -1,0 +1,9 @@
+<div class="container">
+	<app-search [searchTerm]="searchTerm" [limit]="limit" [totalResults] = "totalResults$ | async"
+  [totalPages] = "totalPages$ | async"
+  [actualPage]="actualPage$ | async"
+  (movePage)="movePage($event)"></app-search>
+
+	<app-grid [gifs]="gifs$ | async">
+	</app-grid>
+</div>
