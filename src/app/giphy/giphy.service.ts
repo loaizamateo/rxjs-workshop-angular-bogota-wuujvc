@@ -24,13 +24,26 @@ const giphyUrl = `${API_SEARCH_URL}?q=${DEFAULT_SEARCH_TERM}&api_key=${API_KEY}&
 })
 export class GiphyService {
   private actualPagesBS = new BehaviorSubject(0);
-
+  private searchTermBS = new BehaviorSubject
+  (DEFAULT_SEARCH_TERM);
+  private limitBS = new BehaviorSubject
+  (DEFAULT_SEARCH_LIMIT);
 
   actualPage$ = this.actualPagesBS.asObservable();
+  searchTerm$ = this.searchTermBS.asObservable();
+  limit$ = this.limitBS.asObservable();
 
-  giphyResponse$ = this.actualPage$.pipe(
-    switchMap(actualPage => this.http.get(`${API_SEARCH_URL}?q=${DEFAULT_SEARCH_TERM}&api_key=${API_KEY}&limit=${DEFAULT_SEARCH_LIMIT}&offset=${actualPage * DEFAULT_SEARCH_LIMIT}`))
-  );
+  giphyResponse$ = combineLatest([
+    this.actualPage$, 
+    this.searchTerm$, 
+    this.limit$
+    ]).pipe(
+    switchMap(([actualPage, searchTerm, limit]) => 
+    this.http.get(
+        `${API_SEARCH_URL}?q=${searchTerm}&api_key=${API_KEY}&limit=${limit}&offset=${actualPage * limit}`
+      )
+    )
+  )
 
   gifs$ = this.giphyResponse$.pipe(
     map((response: GiphyResponse)=> response.data)
@@ -41,14 +54,22 @@ export class GiphyService {
   )
 
   totalPages$ = this.totalResults$.pipe(
-    map(totalResults => Math.ceil 
-    (totalResults / DEFAULT_SEARCH_LIMIT))
+    withLatestFrom(this.limit$),
+    map(([totalResults, limit]) => Math.ceil 
+    (totalResults / limit))
   )
 
   constructor(private http: HttpClient) {}
 
   movePage(num: number){
-    this.actualPagesBS.next
-    (this.actualPagesBS.getValue() + num)
+    this.actualPagesBS.next(this.actualPagesBS.getValue() + num);
+  }
+
+  changeSearchTerm(term: string){
+    this.searchTermBS.next(term)
+  }
+
+  changeLimit(limit: number){
+    this.limitBS.next(limit)
   }
 }

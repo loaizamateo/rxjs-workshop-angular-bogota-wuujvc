@@ -16,9 +16,9 @@ import { Gif, GiphyResponse } from "./giphy.model";
   styleUrls: ["./giphy.component.css"]
 })
 export class GiphyComponent {
+  searchTerm$: Observable<string> = this.giphyService.searchTerm$
+  limit : number = DEFAULT_SEARCH_LIMIT;
   gifs: Gif[];
-  searchTerm: string = DEFAULT_SEARCH_TERM;
-  limit: number = DEFAULT_SEARCH_LIMIT;
   gifs$ : Observable<Gif[]> = this.giphyService.gifs$
   totalResults$ : Observable<number>= this.giphyService.totalResults$
 
@@ -34,5 +34,13 @@ export class GiphyComponent {
 
   movePage(num: number){
     this.giphyService.movePage(num)
+  }
+
+  changeSearchTerm(term :string){
+    this.giphyService.changeSearchTerm(term);
+  }
+
+  changeLimit(limit: number){
+    this.giphyService.changeLimit(limit)
   }
 }
